@@ -1,0 +1,249 @@
+openapi: 3.0.3
+info:
+  title: Package Shipping Service
+  description: Service used to send packages to certain addresses.
+  version: 1.0.0
+servers:
+  - url: 'https://localhost:8443'
+paths:
+  /shippingOrders:
+    post:
+      summary: Creates a new ShippingOrder.
+      operationId: OrderPackage
+      requestBody:
+        description: Package Details
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShippingOrder'
+      responses:
+        201:
+          description: Package Order has been created.
+          headers:
+            Location:
+              description: "Path to created ShippingOrder."
+              schema:
+                type: string
+            X-Correlation-ID:
+              $ref: '#/components/headers/X-Correlation-ID'
+            Request-Id:
+              $ref: '#/components/headers/Request-Id'
+        400:
+          description: Bad Request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          headers:
+            X-Correlation-ID:
+              $ref: '#/components/headers/X-Correlation-ID'
+            Request-Id:
+              $ref: '#/components/headers/Request-Id'
+        409:
+          description: "The selected packageName was already taken."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          headers:
+            X-Correlation-ID:
+              $ref: '#/components/headers/X-Correlation-ID'
+            Request-Id:
+              $ref: '#/components/headers/Request-Id'
+    get:
+      summary: Retrieves a list of all shipping-order-details.
+      operationId: ListOrders
+      parameters:
+        - name: status
+          in: query
+          required: false
+          example: IN_PROGRESS
+          schema:
+            type: string
+            enum:
+              - IN_PROGRESS
+              - SENT
+              - DELIVERED
+        - name: offset
+          in: query
+          required: false
+          example: 1
+          schema:
+            type: integer
+        - name: limit
+          description: >
+            Sets the limit of the number of ShippingOrderDetails.
+          in: query
+          example: 10
+          required: false
+          schema:
+            type: integer
+            maximum: 10
+            minimum: 1
+      responses:
+        200:
+          description: List of shipping-order-details.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ShippingOrderDetails'
+          headers:
+            X-Correlation-ID:
+              $ref: '#/components/headers/X-Correlation-ID'
+            Request-Id:
+              $ref: '#/components/headers/Request-Id'
+  /shippingOrders/{orderId}:
+    get:
+      summary: Retrieves the details for an order.
+      operationId: GetOrderDetails
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+          example: 0f8f9e96-9ecb-431d-8f17-aedb8a9c15a5
+      responses:
+        200:
+          description: Get Order Details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShippingOrderDetails'
+          headers:
+            X-Correlation-ID:
+              $ref: '#/components/headers/X-Correlation-ID'
+            Request-Id:
+              $ref: '#/components/headers/Request-Id'
+components:
+  headers:
+    X-Correlation-ID:
+      description: "Uniquely identifies a grouping of interactions."
+      schema:
+        type: string
+        example: 0f8f9e96-9ecb-431d-8f17-aedb8a9c15a5
+    Request-Id:
+      description: "Unique identifier for a single http request."
+      schema:
+        type: string
+        example: 0f8f9e96-9ecb-431d-8f17-aedb8a9c15a5
+  schemas:
+    ShippingOrder:
+      type: object
+      required:
+        - packageName
+        - postalCode
+        - streetName
+        - receiverName
+        - packageSize
+      properties:
+        packageName:
+          type: string
+          example: Birthday Present
+        postalCode:
+          type: string
+          example: 1082PP
+        streetName:
+          type: string
+          example: Gustav Mahlerlaan 10
+        receiverName:
+          type: string
+          example: Robert Swaak
+        packageSize:
+          type: string
+          description:
+            Size of the package to be shipped.
+            S = < 0.2kg
+            M = >=0.2kg & < 1kg
+            L = >=1kg & < 10kg
+            XL = >=10kg
+          enum:
+            - S
+            - M
+            - L
+            - XL
+    OrderList:
+      type: object
+      properties:
+        orders:
+          type: array
+          items:
+            $ref: '#/components/schemas/ShippingOrder'
+        total:
+          type: integer
+          description: "The number of orders in the response"
+    ShippingOrderDetails:
+      type: object
+      required:
+        - packageId
+        - packageName
+        - packageSize
+        - postalCode
+        - streetName
+        - receiverName
+        - orderStatus
+        - expectedDeliveryDate
+      properties:
+        packageId:
+          type: string
+          example: "3f6c794b-2c96-491e-81fb-a2f9731d02c4"
+        packageName:
+          type: string
+          example: "MyPackage"
+        packageSize:
+          type: string
+          enum:
+            - S
+            - M
+            - L
+            - XL
+          example: "M"
+        postalCode:
+          type: string
+          example: "1082PP"
+        streetName:
+          type: string
+          example: "Gustav Mahlerlaan 10"
+        receiverName:
+          type: string
+          example: "Robert Swaak"
+        orderStatus:
+          type: string
+          enum:
+            - IN_PROGRESS
+            - SENT
+            - DELIVERED
+          example: "DELIVERED"
+        expectedDeliveryDate:
+          type: string
+          format: date
+          description: "Expected date of delivery."
+          example: "2030-02-14"
+        actualDeliveryDateTime:
+          type: string
+          format: date-time
+          description: "Actual date-time the package was delivered."
+          example: "2021-01-30T08:30:00Z"
+    Error:
+      type: object
+      properties:
+        status:
+          type: integer
+          description: "HTTP Status"
+        message:
+          type: string
+          description: "Message describing Error."
+        errors:
+          type: array
+          description: "List of ValidationErrors describing which field is invalid."
+          items:
+            $ref: '#/components/schemas/ValidationError'
+    ValidationError:
+      type: object
+      properties:
+        field:
+          type: string
+        message:
+          type: string
