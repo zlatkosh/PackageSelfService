@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/base.xml"/>
+    <springProperty scope="context" name="appName" source="spring.application.name"/>
+<!-- To be commented out after Loki is configured. Loki is to be used for distributed logging. -->
+<!--    <appender name="LOKI" class="com.github.loki4j.logback.Loki4jAppender">-->
+<!--        <http>-->
+<!--            <url>http://localhost:3100/loki/api/v1/push</url>-->
+<!--        </http>-->
+<!--        <format>-->
+<!--            <label>-->
+<!--                <pattern>-->
+<!--                    %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - -->
+<!--                    [Correlation-ID: %X{X-Correlation-ID}, Request-Id: %X{Request-Id}] %msg%n-->
+<!--                </pattern>-->
+<!--            </label>-->
+<!--            <message>-->
+<!--                <pattern>${FILE_LOG_PATTERN}</pattern>-->
+<!--            </message>-->
+<!--            <sortByTime>true</sortByTime>-->
+<!--        </format>-->
+<!--    </appender>-->
+
+    <!-- Enabled MDC (Mapped Diagnostic Context) for Correlation IDs -->
+    <!-- Configured the pattern for log output -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>
+                %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} -
+                [Correlation-ID: %X{X-Correlation-ID}, Request-Id: %X{Request-Id}] %msg%n
+            </pattern>
+        </encoder>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="STDOUT"/>
+    </root>
+</configuration>
