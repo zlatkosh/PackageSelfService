@@ -10,7 +10,7 @@ services:
     volumes:
       - postgres:/data/postgres
     ports:
-      - "5432:5432"
+      - "5434:5432"
     networks:
       - package-self-service-network
     restart: unless-stopped
