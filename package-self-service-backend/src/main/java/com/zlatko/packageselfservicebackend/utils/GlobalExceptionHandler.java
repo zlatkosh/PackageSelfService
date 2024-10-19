@@ -1,8 +1,10 @@
-package com.zlatko.packageshippingservice.utils;
+package com.zlatko.packageselfservicebackend.utils;
 
-import com.zlatko.packageshippingservice.model.dto.error.Error;
-import com.zlatko.packageshippingservice.model.dto.error.ValidationError;
-import com.zlatko.packageshippingservice.model.exceptions.DuplicatePackageNameException;
+import com.zlatko.packageselfservicebackend.model.dtos.errors.Error;
+import com.zlatko.packageselfservicebackend.model.dtos.errors.ValidationError;
+import com.zlatko.packageselfservicebackend.model.exceptions.DuplicatePackageNameException;
+import com.zlatko.packageselfservicebackend.model.exceptions.RecipientNotFoundException;
+import com.zlatko.packageselfservicebackend.model.exceptions.SenderNotFoundException;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -53,6 +55,11 @@ public class GlobalExceptionHandler {
                 .stream()
                 .map(error -> new ValidationError(error.getField(), error.getDefaultMessage()))
                 .collect(Collectors.toList());
+        // Add global errors to the list of validation errors
+        validationErrors.addAll(ex.getBindingResult().getGlobalErrors()
+                .stream()
+                .map(error -> new ValidationError(error.getObjectName(), error.getDefaultMessage()))
+                .toList());
 
         Error error = new Error(
                 HttpStatus.BAD_REQUEST.value(),
@@ -68,11 +75,33 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handles the MethodArgumentNotValidException and returns a 400 Bad Request response.
+     * @param ex The exception that was thrown
+     * @return The response entity with the error message
+     */
+    @ExceptionHandler({RecipientNotFoundException.class, SenderNotFoundException.class})
+    public ResponseEntity<Error> handleValidationExceptions(
+            RuntimeException ex) {
+
+        Error error = new Error(
+                HttpStatus.BAD_REQUEST.value(),
+                ex.getMessage(),
+                null
+        );
+
+        log.trace("Returning 400 Bad Request response: {}", error);
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(error);
+    }
+
+    /**
      * Handles all other exceptions and returns a 500 Internal Server Error response.
      * @param ex The exception that was thrown
      * @return The response entity with the error message
      */
-    @ExceptionHandler(Exception.class)
+    @ExceptionHandler({Exception.class})
     public ResponseEntity<Error> handleGenericException(
             Exception ex) {
 

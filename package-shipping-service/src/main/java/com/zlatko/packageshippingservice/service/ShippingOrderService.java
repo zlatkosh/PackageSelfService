@@ -31,7 +31,7 @@ public class ShippingOrderService {
      * @param shippingOrder The details of the shipping order to create
      * @return  The ID of the created shipping order
      */
-    public String createShippingOrder(ShippingOrder shippingOrder) {
+    public UUID createShippingOrder(ShippingOrder shippingOrder) {
         Optional<ShippingOrderEntity> existingOrder = shippingOrderRepository.findByPackageName(shippingOrder.packageName());
 
         if (existingOrder.isPresent()) {
@@ -51,7 +51,7 @@ public class ShippingOrderService {
 
         );
         ShippingOrderEntity createdOrder = shippingOrderRepository.save(entity);
-        return createdOrder.getId().toString();
+        return createdOrder.getId();
     }
 
     /**

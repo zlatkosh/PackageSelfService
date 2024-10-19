@@ -11,6 +11,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Pattern;
 import java.net.URI;
 import java.util.Optional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -29,7 +30,7 @@ public class ShippingOrderController {
     @PostMapping
     public ResponseEntity<Void> createShippingOrder(@Valid @RequestBody ShippingOrder shippingOrderDTO, HttpServletRequest request) {
 
-        String createdOrderId = shippingOrderService.createShippingOrder(shippingOrderDTO);
+        UUID createdOrderId = shippingOrderService.createShippingOrder(shippingOrderDTO);
         log.trace("Created shipping order with ID: {}", createdOrderId);
 
         URI location = getOrderUri(request.getRequestURL().toString(), createdOrderId);
@@ -38,7 +39,14 @@ public class ShippingOrderController {
                 .build(); // Returning an empty body with just the headers
     }
 
-    private URI getOrderUri(String requestUrl, String createdOrderId) {
+    /**
+     * Construct the URI for the created order.
+     *
+     * @param requestUrl The URL of the request
+     * @param createdOrderId The ID of the created order
+     * @return The URI of the created order
+     */
+    private URI getOrderUri(String requestUrl, UUID createdOrderId) {
         // Construct the absolute URI for the created resource
         URI location = URI.create("%s/%s".formatted(requestUrl, createdOrderId)); // Append the new order ID
 

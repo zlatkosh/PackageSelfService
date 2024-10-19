@@ -1,6 +1,6 @@
-package com.zlatko.packageselfservicebackend.repository;
+package com.zlatko.packageselfservicebackend.repositories;
 
-import com.zlatko.packageselfservicebackend.model.entity.PackageEntity;
+import com.zlatko.packageselfservicebackend.model.entities.PackageEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.UUID;

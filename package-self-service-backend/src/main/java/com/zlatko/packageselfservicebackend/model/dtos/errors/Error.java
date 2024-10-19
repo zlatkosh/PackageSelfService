@@ -1,4 +1,4 @@
-package com.zlatko.packageshippingservice.model.dto.errors;
+package com.zlatko.packageselfservicebackend.model.dtos.errors;
 
 import java.util.List;
 
