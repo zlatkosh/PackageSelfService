@@ -1,10 +1,10 @@
 services:
   postgres:
-    container_name: postgres_package_shipping
+    container_name: postgres_package_self_service
     image: postgres:17.0
     command: postgres -c 'max_connections=120'
     environment:
-      POSTGRES_USER: package_shipping_pg
+      POSTGRES_USER: package_self_service_pg
       POSTGRES_PASSWORD: password
       PGDATA: /data/postgres
     volumes:
@@ -12,16 +12,16 @@ services:
     ports:
       - "5432:5432"
     networks:
-      - package-shipping-network
+      - package-self-service-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready", "-d", "package_shipping_pg"]
+      test: ["CMD-SHELL", "pg_isready", "-d", "package_self_service_pg"]
       interval: 30s
       timeout: 60s
       retries: 5
       start_period: 80s
 networks:
-  package-shipping-network:
+  package-self-service-network:
     driver: bridge
 
 volumes:
