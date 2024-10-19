@@ -18,19 +18,10 @@ CREATE TABLE packages
     weight_in_grams INT          NOT NULL,
     sender_id       UUID         NOT NULL,
     receiver_id     UUID         NOT NULL,
+    date_of_registration TIMESTAMP   DEFAULT CURRENT_TIMESTAMP,
+    downstream_order_url TEXT NOT NULL,
     FOREIGN KEY (sender_id) REFERENCES employees (id),
     FOREIGN KEY (receiver_id) REFERENCES employees (id)
-);
-
--- Create the package_details table linked to the packages
-CREATE TABLE package_details
-(
-    id                   UUID PRIMARY KEY,
-    package_id           UUID NOT NULL,                    -- Reference to the package
-    status               VARCHAR(50) DEFAULT 'REGISTERED', -- Package status: REGISTERED, SENT, DELIVERED
-    date_of_registration TIMESTAMP   DEFAULT CURRENT_TIMESTAMP,
-    date_of_receipt      TIMESTAMP,
-    FOREIGN KEY (package_id) REFERENCES packages (id)
 );
 
 -- Insert sample data for employees with split addresses and UUIDs

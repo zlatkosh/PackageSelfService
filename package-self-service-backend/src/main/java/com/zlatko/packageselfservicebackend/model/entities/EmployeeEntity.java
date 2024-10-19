@@ -1,4 +1,4 @@
-package com.zlatko.packageselfservicebackend.model.entity;
+package com.zlatko.packageselfservicebackend.model.entities;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

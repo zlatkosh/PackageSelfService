@@ -1,4 +1,4 @@
-package com.zlatko.packageselfservicebackend.model.entity;
+package com.zlatko.packageselfservicebackend.model.entities;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -9,14 +9,22 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.time.Instant;
 import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
 
 @Getter
 @Setter
 @Entity
 @Table(name = "packages")
+@NoArgsConstructor // Default constructor required by JPA
+@AllArgsConstructor // Constructor for all fields
+@Builder // Builder pattern
 public class PackageEntity {
     @Id
     @Column(name = "id", nullable = false)
@@ -40,5 +48,14 @@ public class PackageEntity {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "receiver_id", nullable = false)
     private EmployeeEntity receiver;
+
+    @Column(name = "downstream_order_url")
+    @NotNull
+    private String downstreamOrderUrl;
+
+    @ColumnDefault("CURRENT_TIMESTAMP")
+    @Column(name = "date_of_registration")
+    @NotNull
+    private Instant dateOfRegistration;
 
 }

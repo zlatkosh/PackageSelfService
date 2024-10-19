@@ -16,7 +16,7 @@ ___
 ## Technical Details
 I built this as a separate application since anyway __PackageSelfServiceBackEnd__ needed to call its API
 and I'd rather have a live service available instead of only rely on a WireMock endpoint for this part.  
-This is a __Spring Boot 3.2.10__ and __Java 21__.  
+This is a __Spring Boot 3.2.10__ and __Java 21__ application.  
 It creates Java 21's new virtual threads instead of the traditional heavyweight OS threads.
 
 ___
