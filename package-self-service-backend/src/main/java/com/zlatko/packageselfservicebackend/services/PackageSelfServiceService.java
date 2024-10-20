@@ -16,6 +16,8 @@ import com.zlatko.packageselfservicebackend.model.exceptions.SenderNotFoundExcep
 import com.zlatko.packageselfservicebackend.repositories.EmployeeRepository;
 import com.zlatko.packageselfservicebackend.repositories.PackageRepository;
 import com.zlatko.packageselfservicebackend.utils.GlobalConstants;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
+import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -34,6 +36,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@TimeLimiter(name = GlobalConstants.PACKAGE_SELF_SERVICE_SERVICE)
+@RateLimiter(name = GlobalConstants.PACKAGE_SELF_SERVICE_SERVICE)
 public class PackageSelfServiceService {
 
     private final PackageShippingServiceClient packageShippingServiceClient;
