@@ -13,6 +13,7 @@ services:
       SPRING_DATASOURCE_USERNAME: package_self_service_pg
       SPRING_DATASOURCE_PASSWORD: password
       APP_CLIENT_PACKAGESHIPPINGSERVICE_BASEURL: http://package-shipping-service:8443
+      SERVER_PORT: 8442
     depends_on:
       postgres_package_self_service:
         condition: service_healthy
@@ -57,6 +58,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres_package_shipping:5433/package_shipping_pg
       SPRING_DATASOURCE_USERNAME: package_shipping_pg
       SPRING_DATASOURCE_PASSWORD: password
+      SERVER_PORT: 8443
     depends_on:
       postgres_package_shipping:
         condition: service_healthy

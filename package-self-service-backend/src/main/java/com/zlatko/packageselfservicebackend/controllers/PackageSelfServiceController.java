@@ -3,8 +3,13 @@ package com.zlatko.packageselfservicebackend.controllers;
 import com.zlatko.packageselfservicebackend.model.dtos.Package;
 import com.zlatko.packageselfservicebackend.model.dtos.PackageDetails;
 import com.zlatko.packageselfservicebackend.model.dtos.enums.PackageStatus;
+import com.zlatko.packageselfservicebackend.model.dtos.errors.Error;
 import com.zlatko.packageselfservicebackend.services.PackageSelfServiceService;
 import com.zlatko.packageselfservicebackend.utils.GlobalConstants;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -31,6 +36,15 @@ import org.springframework.web.bind.annotation.RestController;
 public class PackageSelfServiceController {
     private final PackageSelfServiceService service;
 
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Package successfully submitted."),
+            @ApiResponse(responseCode = "400", description = "Bad request!",
+                content = @Content(schema = @Schema(implementation = Error.class))),
+            @ApiResponse(responseCode = "409", description = "Conflict! Package name already exists. Please provide a unique name.",
+                content = @Content(schema = @Schema(implementation = Error.class))),
+            @ApiResponse(responseCode = "500", description = "An unexpected error occurred",
+                    content = @Content(schema = @Schema(implementation = Error.class))),
+    })
     @PostMapping
     public ResponseEntity<Void> submitPackage(@Valid @RequestBody Package packageDTO, HttpServletRequest request) {
 
@@ -43,6 +57,14 @@ public class PackageSelfServiceController {
                 .build(); // Returning an empty body with just the headers
     }
 
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved package details",
+                    content = @Content(schema = @Schema(implementation = PackageDetails.class))),
+            @ApiResponse(responseCode = "400", description = "Bad request!",
+                    content = @Content(schema = @Schema(implementation = Error.class))),
+            @ApiResponse(responseCode = "500", description = "An unexpected error occurred",
+                    content = @Content(schema = @Schema(implementation = Error.class))),
+    })
     @GetMapping("/{packageId}")
     public ResponseEntity<PackageDetails> getPackageDetails(
             @Pattern(regexp = GlobalConstants.UUID_REGEX_PATTERN, message = "Invalid senderId format.")
@@ -55,6 +77,14 @@ public class PackageSelfServiceController {
         return ResponseEntity.ok(packageDetails);
     }
 
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved package details list",
+                    content = @Content(schema = @Schema(implementation = PackageDetails.class))),
+            @ApiResponse(responseCode = "400", description = "Bad request!",
+                    content = @Content(schema = @Schema(implementation = Error.class))),
+            @ApiResponse(responseCode = "500", description = "An unexpected error occurred",
+                    content = @Content(schema = @Schema(implementation = Error.class))),
+    })
     @GetMapping
     public ResponseEntity<List<PackageDetails>> listPackageDetails(
             @Pattern(regexp = GlobalConstants.UUID_REGEX_PATTERN, message = "Invalid senderId format.")

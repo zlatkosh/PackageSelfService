@@ -1,0 +1,191 @@
+openapi: 3.0.1
+info:
+  title: OpenAPI definition
+  version: v0
+servers:
+- url: http://127.0.0.1:8442
+  description: Generated server url
+paths:
+  /api/package-self-service:
+    get:
+      tags:
+      - package-self-service-controller
+      operationId: listPackageDetails
+      parameters:
+      - name: senderId
+        in: query
+        required: true
+        schema:
+          pattern: "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+          type: string
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - IN_PROGRESS
+          - SENT
+          - DELIVERED
+      responses:
+        "200":
+          description: Successfully retrieved package details list
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PackageDetails"
+        "500":
+          description: An unexpected error occurred
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Error"
+        "400":
+          description: Bad request!
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+      tags:
+      - package-self-service-controller
+      operationId: submitPackage
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Package"
+        required: true
+      responses:
+        "409":
+          description: Conflict! Package name already exists. Please provide a unique
+            name.
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Error"
+        "201":
+          description: Package successfully submitted.
+        "500":
+          description: An unexpected error occurred
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Error"
+        "400":
+          description: Bad request!
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Error"
+  /api/package-self-service/{packageId}:
+    get:
+      tags:
+      - package-self-service-controller
+      operationId: getPackageDetails
+      parameters:
+      - name: senderId
+        in: query
+        required: true
+        schema:
+          pattern: "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+          type: string
+      - name: packageId
+        in: path
+        required: true
+        schema:
+          pattern: "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+          type: string
+      responses:
+        "200":
+          description: Successfully retrieved package details
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/PackageDetails"
+        "500":
+          description: An unexpected error occurred
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Error"
+        "400":
+          description: Bad request!
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Error"
+components:
+  schemas:
+    Package:
+      required:
+      - packageName
+      - recipientId
+      - senderId
+      - weightInGrams
+      type: object
+      properties:
+        packageName:
+          type: string
+        weightInGrams:
+          minimum: 1
+          type: integer
+          format: int32
+        recipientId:
+          pattern: "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+          type: string
+        senderId:
+          pattern: "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+          type: string
+    Error:
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+        message:
+          type: string
+        errors:
+          type: array
+          items:
+            $ref: "#/components/schemas/ValidationError"
+    ValidationError:
+      type: object
+      properties:
+        field:
+          type: string
+        message:
+          type: string
+    PackageDetails:
+      type: object
+      properties:
+        packageId:
+          type: string
+        packageName:
+          type: string
+        dateOfRegistration:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum:
+          - IN_PROGRESS
+          - SENT
+          - DELIVERED
+        expectedDeliveryDate:
+          type: string
+          format: date
+        actualDeliveryDateTime:
+          type: string
+          format: date-time
+        recipient:
+          $ref: "#/components/schemas/RecipientDetails"
+    RecipientDetails:
+      type: object
+      properties:
+        recipientId:
+          type: string
+        recipientName:
+          type: string
+        recipientAddress:
+          type: string
