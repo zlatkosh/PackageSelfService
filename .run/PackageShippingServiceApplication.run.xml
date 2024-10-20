@@ -1,5 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="PackageShippingServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+    <option name="ACTIVE_PROFILES" value="local" />
     <module name="package-shipping-service" />
     <option name="SPRING_BOOT_MAIN_CLASS" value="com.zlatko.packageshippingservice.PackageShippingServiceApplication" />
     <method v="2">
