@@ -91,7 +91,7 @@ This ID is then used to trace the request through the logs of both the `Package 
 ## Things I would improve given time... So many :)
 - Improve branch coverage in Unit tests
 - Introduce Integration tests with a test container for PostgreSQL and a WireMock server for the `Package Self Service Backend`
-- Implement a proper logging strategy by sending logs to Loki and Grafana (Started in the `logback-spring.xml` files but no time to finish)
+- Implement a proper distributed logging strategy by sending logs to Loki and Grafana (Started in the `logback-spring.xml` files but no time to finish)
 - Implement a proper monitoring strategy by sending metrics to Prometheus and Grafana
 - Maybe even consider replacing the `X-Correlation-ID` and `Request-Id` approach with TraceId and SpanId from OpenTelemetry by sending these to Jaeger, Zipkin or Tempo
 - Implement a proper security strategy with OAuth2 and JWT tokens
