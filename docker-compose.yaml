@@ -1,0 +1,93 @@
+services:
+  # **** package-self-service-backend ****
+  package-self-service-backend:
+    image: package-self-service-backend:latest
+    build:
+      context: ./package-self-service-backend
+      dockerfile: Dockerfile
+    container_name: package-self-service-backend
+    ports:
+      - "8442:8442"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres_package_self_service:5434/package_self_service_pg
+      SPRING_DATASOURCE_USERNAME: package_self_service_pg
+      SPRING_DATASOURCE_PASSWORD: password
+      APP_CLIENT_PACKAGESHIPPINGSERVICE_BASEURL: http://package-shipping-service:8443
+    depends_on:
+      postgres_package_self_service:
+        condition: service_healthy
+    networks:
+      - package-self-service-network
+
+  postgres_package_self_service:
+    container_name: postgres_package_self_service
+    image: postgres:17.0
+    command: postgres -c 'max_connections=120'
+    environment:
+      POSTGRES_USER: package_self_service_pg
+      POSTGRES_PASSWORD: password
+      PGDATA: /data/postgres
+      PGPORT: 5434
+    volumes:
+      - postgres_package_self_service_volume:/data/postgres
+    ports:
+      - "5434:5434"
+    networks:
+      - package-self-service-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "-d", "package_self_service_pg"]
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 80s
+
+# **** package-shipping-service ****
+  package-shipping-service:
+    image: package-shipping-service:latest
+    build:
+      context: ./package-shipping-service
+      dockerfile: Dockerfile
+    container_name: package-shipping-service
+    ports:
+      - "8443:8443"
+    networks:
+      - package-self-service-network
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres_package_shipping:5433/package_shipping_pg
+      SPRING_DATASOURCE_USERNAME: package_shipping_pg
+      SPRING_DATASOURCE_PASSWORD: password
+    depends_on:
+      postgres_package_shipping:
+        condition: service_healthy
+
+  postgres_package_shipping:
+    container_name: postgres_package_shipping
+    image: postgres:17.0
+    command: postgres -c 'max_connections=120'
+    environment:
+      POSTGRES_USER: package_shipping_pg
+      POSTGRES_PASSWORD: password
+      PGDATA: /data/postgres
+      PGPORT: 5433
+    volumes:
+      - postgres_package_shipping_volume:/data/postgres
+    ports:
+      - "5433:5433"
+    networks:
+      - package-self-service-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "-d", "package_shipping_pg"]
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 80s
+
+networks:
+  package-self-service-network:
+    driver: bridge
+
+volumes:
+  postgres_package_self_service_volume:
+  postgres_package_shipping_volume:

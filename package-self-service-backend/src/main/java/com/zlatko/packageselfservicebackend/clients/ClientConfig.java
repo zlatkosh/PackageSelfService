@@ -11,7 +11,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 public class ClientConfig {
 
     @Bean
-    public WebClient packageShippingServiceWebClient(@Value("${app.client.packageShippingService.base-url}") String baseUrl, WebClient.Builder webClientBuilder) {
+    public WebClient packageShippingServiceWebClient(@Value("${app.client.packageShippingService.baseurl}") String baseUrl, WebClient.Builder webClientBuilder) {
         log.debug("Initializing packageShippingServiceWebClient, with base URL: {}", baseUrl);
         return webClientBuilder
                 .baseUrl(baseUrl)
