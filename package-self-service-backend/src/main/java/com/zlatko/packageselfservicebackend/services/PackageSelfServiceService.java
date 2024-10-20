@@ -15,10 +15,15 @@ import com.zlatko.packageselfservicebackend.model.exceptions.RecipientNotFoundEx
 import com.zlatko.packageselfservicebackend.model.exceptions.SenderNotFoundException;
 import com.zlatko.packageselfservicebackend.repositories.EmployeeRepository;
 import com.zlatko.packageselfservicebackend.repositories.PackageRepository;
+import com.zlatko.packageselfservicebackend.utils.GlobalConstants;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import java.net.URI;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +40,13 @@ public class PackageSelfServiceService {
     private final EmployeeRepository employeeRepository;
     private final PackageRepository packageRepository;
 
+    /**
+     * Submits a package by creating a shipping order in the downstream service and persisting the package in the database. <br>
+     * It also validates that the sender and recipient exist. <br>
+     *
+     * @param packageDTO package DTO
+     * @return UUID of the submitted package
+     */
     @Transactional
     public UUID submitPackage(@Valid Package packageDTO) {
         EmployeeEntity sender = getSender(packageDTO.senderId());
@@ -52,6 +64,15 @@ public class PackageSelfServiceService {
         return persistPackage(packageDTO, sender, recipient, locationURI);
     }
 
+    /**
+     * Persists the package in the database. <br>
+     *
+     * @param packageDTO package DTO
+     * @param sender sender entity
+     * @param recipient recipient entity
+     * @param locationURI location URI
+     * @return UUID of the persisted package
+     */
     private UUID persistPackage(@Valid Package packageDTO, EmployeeEntity sender, EmployeeEntity recipient, URI locationURI) {
 
         PackageEntity packageEntity = PackageEntity.builder()
@@ -68,7 +89,7 @@ public class PackageSelfServiceService {
     }
 
     /**
-     * Maps package size in grams to package size.
+     * Maps package size in grams to package size. <br>
      *
      * @param sizeInGrams package size in grams
      * @return package size
@@ -83,7 +104,54 @@ public class PackageSelfServiceService {
     }
 
     /**
-     * Validates that the sender ID exists and returns the sender entity.
+     * Validates that the recipient ID exists and returns the recipient entity. <br>
+     * In case the recipient is not found, a RecipientNotFoundException is thrown which is handled by the global exception handler. <br>
+     *
+     * @param recipientId recipient ID
+     * @return recipient entity
+     */
+    private EmployeeEntity getRecipient(String recipientId) {
+        var employeeEntity = employeeRepository.findById(UUID.fromString(recipientId))
+                        .orElseThrow(() -> new RecipientNotFoundException(recipientId));
+        log.trace("Recipient found: {}", employeeEntity);
+        return employeeEntity;
+    }
+
+    /**
+     * Retrieves the package details by fetching the order details from the downstream service and mapping them to package details. <br>
+     * In case the package is not found, a PackageNotFoundException is thrown which is handled by the global exception handler. <br>
+     *
+     * @param packageId packageId
+     * @param senderId senderId
+     * @return package details
+     */
+    public PackageDetails getPackageDetails(String packageId, String senderId) {
+        PackageEntity packageEntity = packageRepository.findByIdAndSender(UUID.fromString(packageId), getSender(senderId))
+                .orElseThrow(() -> new PackageNotFoundException(packageId, senderId));
+        return enrichPackageDetails(packageEntity);
+    }
+
+    /**
+     * Lists the package details by fetching the order details from the downstream service and mapping them to package details. <br>
+     * The status parameter is optional and can be used to filter the package details by status. <br>
+     *
+     * @param senderId senderId
+     * @param status status
+     * @return list of package details
+     */
+    public List<PackageDetails> listPackageDetails(@Pattern(regexp = GlobalConstants.UUID_REGEX_PATTERN, message = "Invalid senderId format.") @NotBlank(message = "Sender ID is required.") String senderId, Optional<PackageStatus> status) {
+        EmployeeEntity sender = getSender(senderId);
+        List<PackageEntity> packageEntities = packageRepository.findBySender(sender);
+        return packageEntities.stream()
+                .parallel() // I would replace this easy ForkJoinPool implementation with a virtual thread pool for a production scenario
+                .map(this::enrichPackageDetails)
+                .filter(packageDetails -> status.isEmpty() || packageDetails.status().equals(status.get()))
+                .toList();
+    }
+
+    /**
+     * Validates that the sender ID exists and returns the sender entity. <br>
+     * In case the sender is not found, a SenderNotFoundException is thrown which is handled by the global exception handler. <br>
      *
      * @param senderId sender ID
      * @return sender entity
@@ -97,21 +165,14 @@ public class PackageSelfServiceService {
     }
 
     /**
-     * Validates that the recipient ID exists and returns the recipient entity.
+     * Enriches the package details by: <br>
+     *  - fetching the order details from the downstream service and mapping them to package details <br>
+     *  - mapping the package entity to package details <br>
      *
-     * @param recipientId recipient ID
-     * @return recipient entity
+     * @param packageEntity package entity
+     * @return package details
      */
-    private EmployeeEntity getRecipient(String recipientId) {
-        var employeeEntity = employeeRepository.findById(UUID.fromString(recipientId))
-                        .orElseThrow(() -> new RecipientNotFoundException(recipientId));
-        log.trace("Recipient found: {}", employeeEntity);
-        return employeeEntity;
-    }
-
-    public PackageDetails getPackageDetails(String packageId, String senderId) {
-        PackageEntity packageEntity = packageRepository.findByIdAndSender(UUID.fromString(packageId), getSender(senderId))
-                .orElseThrow(() -> new PackageNotFoundException(packageId, senderId));
+    private PackageDetails enrichPackageDetails(PackageEntity packageEntity) {
         // Extract the order ID from the URL
         String orderId = StringUtils.substringAfterLast(packageEntity.getDownstreamOrderUrl(), "/");
         ShippingOrderDetails clientOrderDetails = packageShippingServiceClient.getOrderDetails(orderId);
@@ -127,7 +188,6 @@ public class PackageSelfServiceService {
                         packageEntity.getReceiver().getName(),
                         constructRecipientAddress(packageEntity.getReceiver())
                 )
-
         );
     }
 
