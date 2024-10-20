@@ -11,6 +11,7 @@ import com.zlatko.packageselfservicebackend.model.exceptions.DuplicatePackageNam
 import com.zlatko.packageselfservicebackend.services.PackageSelfServiceService;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Nested;
@@ -47,8 +48,9 @@ class PackageSelfServiceControllerTest {
     @Nested
     class SubmitPackageTests {
 
+        @SneakyThrows
         @Test
-        void should_return_201_when_package_is_submitted_successfully() throws Exception {
+        void should_return_201_when_package_is_submitted_successfully() {
             // Given
             Package packageDTO = initValidPackage();
             UUID submittedPackageId = UUID.randomUUID();
@@ -64,8 +66,9 @@ class PackageSelfServiceControllerTest {
             verify(service).submitPackage(any(Package.class));  // Verify service method was called
         }
 
+        @SneakyThrows
         @Test
-        void should_return_400_when_invalid_package_data_is_provided() throws Exception {
+        void should_return_400_when_invalid_package_data_is_provided() {
             // Given
             String invalidPackageJson = "{}"; // Simulate invalid package data
 
@@ -76,8 +79,9 @@ class PackageSelfServiceControllerTest {
                     .andExpect(status().isBadRequest()); // Expect 400 Bad Request for invalid data
         }
 
+        @SneakyThrows
         @Test
-        void should_return_500_when_service_throws_runtime_exception() throws Exception {
+        void should_return_500_when_service_throws_runtime_exception() {
             // Given
             Package packageDTO = initValidPackage();
             when(service.submitPackage(any(Package.class))).thenThrow(new RuntimeException("Service error"));
@@ -93,8 +97,9 @@ class PackageSelfServiceControllerTest {
             verify(service).submitPackage(any(Package.class));  // Ensure service was called
         }
 
+        @SneakyThrows
         @Test
-        void should_return_409_when_service_throws_DuplicatePackageNameException() throws Exception {
+        void should_return_409_when_service_throws_DuplicatePackageNameException() {
             // Given
             Package packageDTO = initValidPackage();
             when(service.submitPackage(any(Package.class))).thenThrow(new DuplicatePackageNameException(packageDTO.packageName()));
@@ -114,8 +119,9 @@ class PackageSelfServiceControllerTest {
     @Nested
     class GetPackageDetailsTests {
 
+        @SneakyThrows
         @Test
-        void should_return_200_and_package_details_when_valid_packageId_is_provided() throws Exception {
+        void should_return_200_and_package_details_when_valid_packageId_is_provided() {
             // Given
             String packageId = UUID.randomUUID().toString();
             String senderId = UUID.randomUUID().toString();
@@ -134,8 +140,9 @@ class PackageSelfServiceControllerTest {
             verify(service).getPackageDetails(packageId, senderId);
         }
 
+        @SneakyThrows
         @Test
-        void should_return_400_when_invalid_senderId_and_invalid_packageId_is_provided() throws Exception {
+        void should_return_400_when_invalid_senderId_and_invalid_packageId_is_provided() {
             // Given
             String invalidSenderId = "invalid-sender-id";
             String invalidPackageId = "invalid-package-id";
@@ -146,8 +153,9 @@ class PackageSelfServiceControllerTest {
                     .andExpect(status().isBadRequest());  // Expect 400 Bad Request
         }
 
+        @SneakyThrows
         @Test
-        void should_return_500_when_service_throws_runtime_exception() throws Exception {
+        void should_return_500_when_service_throws_runtime_exception() {
             // Given
             String senderId = UUID.randomUUID().toString();
             String packageId = UUID.randomUUID().toString();
@@ -167,8 +175,9 @@ class PackageSelfServiceControllerTest {
     @Nested
     class ListPackageDetailsTests {
 
+        @SneakyThrows
         @Test
-        void should_return_200_and_list_of_package_details_when_valid_senderId_is_provided() throws Exception {
+        void should_return_200_and_list_of_package_details_when_valid_senderId_is_provided() {
             // Given
             String senderId = UUID.randomUUID().toString();
             List<PackageDetails> packageDetailsList = List.of(initDummyPackageDetails(UUID.randomUUID().toString()));
@@ -183,8 +192,9 @@ class PackageSelfServiceControllerTest {
             verify(service).listPackageDetails(senderId, Optional.empty());
         }
 
+        @SneakyThrows
         @Test
-        void should_filter_by_status_when_status_is_provided() throws Exception {
+        void should_filter_by_status_when_status_is_provided() {
             // Given
             String senderId = UUID.randomUUID().toString();
             Optional<PackageStatus> status = Optional.of(PackageStatus.DELIVERED);
@@ -201,8 +211,9 @@ class PackageSelfServiceControllerTest {
             verify(service).listPackageDetails(senderId, status);
         }
 
+        @SneakyThrows
         @Test
-        void should_return_500_when_service_throws_runtime_exception() throws Exception {
+        void should_return_500_when_service_throws_runtime_exception() {
             // Given
             String senderId = UUID.randomUUID().toString();
             when(service.listPackageDetails(anyString(), any())).thenThrow(new RuntimeException("Service error"));
