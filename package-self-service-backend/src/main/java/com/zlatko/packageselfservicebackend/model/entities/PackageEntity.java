@@ -9,7 +9,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -56,6 +56,6 @@ public class PackageEntity {
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "date_of_registration")
     @NotNull
-    private Instant dateOfRegistration;
+    private LocalDateTime dateOfRegistration;
 
 }

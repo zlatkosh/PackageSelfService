@@ -3,6 +3,7 @@ package com.zlatko.packageselfservicebackend.utils;
 import com.zlatko.packageselfservicebackend.model.dtos.errors.Error;
 import com.zlatko.packageselfservicebackend.model.dtos.errors.ValidationError;
 import com.zlatko.packageselfservicebackend.model.exceptions.DuplicatePackageNameException;
+import com.zlatko.packageselfservicebackend.model.exceptions.PackageNotFoundException;
 import com.zlatko.packageselfservicebackend.model.exceptions.RecipientNotFoundException;
 import com.zlatko.packageselfservicebackend.model.exceptions.SenderNotFoundException;
 import java.util.List;
@@ -79,7 +80,7 @@ public class GlobalExceptionHandler {
      * @param ex The exception that was thrown
      * @return The response entity with the error message
      */
-    @ExceptionHandler({RecipientNotFoundException.class, SenderNotFoundException.class})
+    @ExceptionHandler({RecipientNotFoundException.class, SenderNotFoundException.class, PackageNotFoundException.class})
     public ResponseEntity<Error> handleValidationExceptions(
             RuntimeException ex) {
 
