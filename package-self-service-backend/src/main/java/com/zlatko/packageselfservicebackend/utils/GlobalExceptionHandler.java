@@ -9,12 +9,14 @@ import com.zlatko.packageselfservicebackend.model.exceptions.SenderNotFoundExcep
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.MessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
 @ControllerAdvice
 @Slf4j
@@ -68,7 +70,34 @@ public class GlobalExceptionHandler {
                 validationErrors
         );
 
-        log.trace("Returning 400 Bad Request response: {}", error);
+        log.trace("Returning 400 Bad Request response for MethodArgumentNotValidException: {}", error);
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(error);
+    }
+
+    /**
+     * Handles the HandlerMethodValidationException and returns a 400 Bad Request response.
+     * @param ex The exception that was thrown
+     * @return The response entity with the error message
+     */
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    public ResponseEntity<Error> handleValidationExceptions(
+            HandlerMethodValidationException ex) {
+
+        List<ValidationError> validationErrors = ex.getValueResults()
+                .stream()
+                .map(error -> new ValidationError(error.getMethodParameter().getParameterName(), error.getResolvableErrors().stream().map(MessageSourceResolvable::getDefaultMessage).toList().toString()))
+                .collect(Collectors.toList());
+
+        Error error = new Error(
+                HttpStatus.BAD_REQUEST.value(),
+                "Invalid input data",
+                validationErrors
+        );
+
+        log.trace("Returning 400 Bad Request response for HandlerMethodValidationException: {}", error);
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -90,7 +119,7 @@ public class GlobalExceptionHandler {
                 null
         );
 
-        log.trace("Returning 400 Bad Request response: {}", error);
+        log.trace("Returning 400 Bad Request response for RecipientNotFoundException, SenderNotFoundException, or PackageNotFoundException: {}", error);
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .contentType(MediaType.APPLICATION_JSON)

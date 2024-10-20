@@ -1,0 +1,17 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="PackageSelfServiceBackendApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+    <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
+    <module name="package-self-service-backend" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="com.zlatko.packageselfservicebackend.PackageSelfServiceBackendApplication" />
+    <option name="WORKING_DIRECTORY" value="file://$MODULE_DIR$" />
+    <extension name="coverage">
+      <pattern>
+        <option name="PATTERN" value="com.zlatko.packageselfservicebackend.*" />
+        <option name="ENABLED" value="true" />
+      </pattern>
+    </extension>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
