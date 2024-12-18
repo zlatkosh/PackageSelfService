@@ -98,4 +98,20 @@ This ID is then used to trace the request through the logs of both the `Package 
 - Replace the docker-compose files with Kubernetes manifests for the services. PostgreSQL instances are fine in Docker Compose unless provisioned directly on a cloud provider.
 - Implement a proper CI/CD pipeline
 - Talk changing the `Package Shipping Service API` a bit with the team responsible, to reduce the number of calls to it the current integration dictates.
-- Add some diagrams to this documentation and make it more visually appealing
+- Add some diagrams to this documentation and make it more visually appealing  
+
+## Self review notes
+- Enforce SOLID principles a bit more. 
+  - the [PackageShippingServiceClient](package-self-service-backend/src/main/java/com/zlatko/packageselfservicebackend/clients/PackageShippingServiceClient.java) 
+    - could have exposed an interface for it
+  - the [PackageSelfServiceService](package-self-service-backend/src/main/java/com/zlatko/packageselfservicebackend/services/PackageSelfServiceService.java) 
+    - auxiliary methods could be extracted into separate classes
+    - could have exposed an interface for it
+- Should not have added @TimeLimiter to the main endpoint in [PackageSelfServiceService](package-self-service-backend/src/main/java/com/zlatko/packageselfservicebackend/services/PackageSelfServiceService.java)
+  considering it's a blocking call (not WebFlux or CompletableFuture) and the TimeLimiter will not work as expected.
+### Hibernate related improvements
+- Go over the app, taking [Performance oriented Spring Data JPA & Hibernate by Maciej Walkowiak](https://www.youtube.com/watch?v=L9ZOgX-3LTQ) in mind
+  - Should have used getReferenceById instead of findById in some places in. [PackageSelfServiceService](package-self-service-backend/src/main/java/com/zlatko/packageselfservicebackend/services/PackageSelfServiceService.java)
+    But probably better to not have used @ManyToOne in the first place and instead  just use sendersId and receiversId as Strings. 
+  - Could have cached the Employee entities to reduce the number of calls to the database.
+  - Could have used optimistic locking with @Version in the entities to reduce the number of calls to the database...?
